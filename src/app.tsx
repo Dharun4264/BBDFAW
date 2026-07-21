@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Timeline from './pages/Timeline';
@@ -27,7 +27,7 @@ const App = () => {
   };
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div className="relative min-h-screen w-full bg-slate-950 font-mono text-slate-200 overflow-hidden">
         {/* Ambient glow layers */}
         <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-emerald-500/20 blur-[150px]" />
@@ -62,27 +62,26 @@ const App = () => {
 
         {/* Main content */}
         <div className="relative z-10 pt-14">
+          
+          {/* THE NEW, CLEAN V6 ROUTING STRUCTURE */}
           <Routes>
-            {/* 2. THE STANDALONE LOGIN ROUTE */}
+            {/* Standalone Login Route */}
             <Route path="/login" element={<Login />} />
 
-            {/* 3. THE AUTHENTICATED ROUTES WRAPPED IN THE LAYOUT */}
-            <Route path="/*" element={
-              <Layout>
-                <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/timeline" element={<Timeline />} />
-                  <Route path="/upload" element={<Upload />} />
-                  <Route path="/notes" element={<Notes />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Layout>
-            } />
+            {/* Authenticated Routes wrapped in Layout */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="timeline" element={<Timeline />} />
+              <Route path="upload" element={<Upload />} />
+              <Route path="notes" element={<Notes />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
           </Routes>
+          
         </div>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 

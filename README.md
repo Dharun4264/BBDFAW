@@ -1,6 +1,6 @@
 # 🛸 PWNDORA // Browser-Native DFIR Workbench
 
-**Built by Team Karur | Submission for Track T-04: DILE**
+**Built by Team CyberNexus | Submission for Track T-04: DILE**
 
 PWNDORA is a next-generation, strictly client-side Digital Forensics and Incident Response (DFIR) workbench. Designed to eliminate the friction of cloud uploads and backend processing delays, PWNDORA leverages browser-native APIs to parse, analyze, and map forensic artifacts entirely within local memory. 
 

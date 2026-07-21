@@ -1,9 +1,5 @@
-import React, { useState, useEffect, type ReactNode } from "react";
-import { NavLink } from "react-router-dom"; // <-- 1. Import NavLink
-
-interface LayoutProps {
-  children: ReactNode;
-}
+import React, { useState, useEffect } from "react";
+import { NavLink, Outlet } from "react-router-dom"; // <-- Imported Outlet here
 
 // 2. Change items to objects with actual paths mapped to App.tsx
 const navigationItems = [
@@ -13,7 +9,8 @@ const navigationItems = [
   { name: "Threat Intel", path: "/notes" }, 
 ];
 
-export function Layout({ children }: LayoutProps) {
+// Removed the LayoutProps interface and { children } since we use Outlet now
+export function Layout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
 
@@ -127,7 +124,9 @@ export function Layout({ children }: LayoutProps) {
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(148,163,184,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.45)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_0%,#000_40%,transparent_100%)]"
             />
-            <div className="relative z-10">{children}</div>
+            
+            {/* Added Outlet here to render the child pages! */}
+            <div className="relative z-10"><Outlet /></div>
           </main>
         </div>
       </div>
