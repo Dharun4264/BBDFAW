@@ -4,8 +4,37 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    // 1. Securely purge the client-side forensic data (Innovation feature)
+    sessionStorage.removeItem('pwndora_findings');
+    
+    // 2. Future-proof: Redirect to the login page
+    navigate('/login');
+  };
+
   return (
     <div className="flex flex-col gap-6 py-2 min-h-[calc(100vh-3.5rem)]">
+      
+      {/* --- NEW TOP BAR: User ID & Logout --- */}
+      <div className="flex justify-end items-center gap-4 border-b border-slate-800/60 pb-3">
+        <div className="flex items-center gap-2 bg-slate-900/50 border border-slate-800 px-3 py-1.5 rounded-md">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="text-xs font-mono text-slate-400 tracking-widest">
+            ID: <span className="text-cyan-300 font-semibold">CYBERNEXUS-01</span>
+          </span>
+        </div>
+        
+        <button 
+          onClick={handleLogout}
+          className="group relative px-4 py-1.5 overflow-hidden rounded-md border border-rose-500/30 bg-rose-500/10 text-xs font-mono font-semibold tracking-widest text-rose-400 transition-all hover:bg-rose-500/20 hover:border-rose-500/50"
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            LOGOUT / PURGE
+          </span>
+        </button>
+      </div>
+      {/* --- END TOP BAR --- */}
+
       {/* Header */}
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-bold tracking-wider text-cyan-300 uppercase">
@@ -82,7 +111,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right Col: Active Case Details */}
+        {/* Right Col: Active Case Details - UPDATED FOR HACKATHON RULE #10 */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6 backdrop-blur-sm flex flex-col justify-between">
           <div>
             <h2 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
@@ -91,19 +120,21 @@ const Dashboard = () => {
             <div className="space-y-3 font-mono text-xs">
               <div className="flex justify-between border-b border-slate-800 pb-2">
                 <span className="text-slate-500">Case ID:</span>
-                <span className="text-slate-300">#PWN-2026-03</span>
+                <span className="text-cyan-300">#PWN-2026-03</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-500">Lead Analyst:</span>
-                <span className="text-emerald-400">Team Karur</span>
+              <span className="text-slate-500">Lead Analyst:</span>
+              <span className="text-emerald-400">CyberNexus</span>
               </div>
-              <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-500">Evidence Type:</span>
-                <span className="text-slate-300">Raw Disk Image (.dd)</span>
+              <div className="flex flex-col border-b border-slate-800 pb-2 gap-1">
+                <span className="text-slate-500">Incident Details:</span>
+                <span className="text-rose-400 leading-relaxed text-right">
+                  Employee downloaded invoice.lnk via phishing email, launching PowerShell and leading to malware execution.
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Status:</span>
-                <span className="text-amber-400">UNDER INVESTIGATION</span>
+              <div className="flex justify-between pt-1">
+                <span className="text-slate-500">Required Action:</span>
+                <span className="text-amber-400 animate-pulse">Parse Artifacts (LNK/Reg)</span>
               </div>
             </div>
           </div>

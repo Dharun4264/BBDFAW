@@ -1,93 +1,80 @@
-import React from 'react';
-// Importing your rescued data file!
-import { UImockData } from '../data/UImockdata';
-
+import React, { useState, useEffect } from 'react';
+import { exportReportAsCSV, exportReportAsJSON } from '../UTILSS/exporter';
 const Timeline = () => {
-  // Dynamic color coding for the forensic risk levels
-  const getRiskBadge = (risk: string) => {
-    switch (risk.toLowerCase()) {
-      case 'high':
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.2)]';
-      case 'medium':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]';
-      case 'low':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]';
-      default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-    }
-  };
+  const [findings, setFindings] = useState<any[]>([]);
+
+  // Load findings from sessionStorage (populated by the Upload parser)
+  useEffect(() => {
+    const savedFindings = JSON.parse(sessionStorage.getItem('pwndora_findings') || '[]');
+    // Sort by timestamp (Requirement #4)
+    const sorted = savedFindings.sort((a: any, b: any) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    setFindings(sorted);
+  }, []);
 
   return (
     <div className="flex flex-col gap-6 py-2 min-h-[calc(100vh-3.5rem)]">
-      {/* Header Section */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-xl font-bold tracking-wider text-cyan-300 uppercase">
-          Forensic Event Timeline
-        </h1>
-        <p className="text-sm text-slate-400">
-          Chronological reconstruction of ingested artifacts and system executions.
-        </p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-xl font-bold tracking-wider text-cyan-300 uppercase">
+            Forensic Findings Viewer
+          </h1>
+          <p className="text-sm text-slate-400">
+            Chronological reconstruction of extracted artifact fields.
+          </p>
+        </div>
+        
+        {/* Requirement #6: Export Evidence Report */}
+        <div className="flex gap-3">
+          <button 
+            onClick={() => exportReportAsCSV(findings)}
+            className="bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700/80 px-4 py-2 rounded-lg text-xs font-semibold tracking-wider transition-colors"
+          >
+            EXPORT CSV
+          </button>
+          <button 
+            onClick={() => exportReportAsJSON(findings, "Analyst notes exported.")}
+            className="bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 px-4 py-2 rounded-lg text-xs font-semibold tracking-wider transition-colors"
+          >
+            EXPORT JSON
+          </button>
+        </div>
       </div>
 
-      {/* Main Data Table */}
       <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 shadow-xl backdrop-blur-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
-            
-            {/* Table Headers */}
-            <thead className="border-b border-slate-800 bg-slate-950/80 text-xs font-semibold tracking-widest text-slate-500">
+            {/* Requirement #4: Exact Table Columns */}
+            <thead className="border-b border-slate-800 bg-slate-950/80 text-xs font-semibold tracking-widest text-slate-500 uppercase">
               <tr>
-                <th className="px-6 py-4">TIMESTAMP</th>
-                <th className="px-6 py-4">EVENT TYPE</th>
-                <th className="px-6 py-4">TARGET FILE</th>
-                <th className="px-6 py-4">EXECUTION PATH</th>
-                <th className="px-6 py-4">RISK LEVEL</th>
+                <th className="px-6 py-4">Timestamp</th>
+                <th className="px-6 py-4">Artifact Type</th>
+                <th className="px-6 py-4">Extracted Field</th>
+                <th className="px-6 py-4">Value</th>
+                <th className="px-6 py-4">Forensic Significance</th>
               </tr>
             </thead>
-
-            {/* Table Body (Mapping the Mock Data) */}
             <tbody className="divide-y divide-slate-800/50">
-              {UImockData.map((item) => (
-                <tr 
-                  key={item.id} 
-                  className="transition-colors duration-200 hover:bg-slate-800/40 group cursor-default"
-                >
-                  <td className="whitespace-nowrap px-6 py-4 font-mono text-cyan-400/90 group-hover:text-cyan-300">
-                    {item.time}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-slate-200">
-                    {item.event}
-                  </td>
-                  <td className="px-6 py-4 font-mono text-slate-400 group-hover:text-slate-300">
-                    {item.file}
-                  </td>
-                  <td 
-                    className="max-w-[250px] truncate px-6 py-4 font-mono text-xs text-slate-500 group-hover:text-slate-400" 
-                    title={item.path}
-                  >
-                    {item.path}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span 
-                      className={`inline-flex items-center rounded-sm border px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${getRiskBadge(item.risk)}`}
-                    >
-                      {item.risk}
-                    </span>
+              {findings.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                    No artifacts ingested yet. Use the Evidence Vault to upload files.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                findings.map((item, idx) => (
+                  <tr key={idx} className="transition-colors duration-200 hover:bg-slate-800/40 group">
+                    <td className="whitespace-nowrap px-6 py-4 font-mono text-cyan-400/90">{item.timestamp}</td>
+                    <td className="px-6 py-4 font-medium text-slate-200">{item.artifactType}</td>
+                    <td className="px-6 py-4 text-amber-400">{item.field}</td>
+                    <td className="max-w-[200px] truncate px-6 py-4 font-mono text-xs text-slate-400" title={item.value}>{item.value}</td>
+                    <td className="px-6 py-4 text-xs text-slate-400">{item.significance}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
-            
           </table>
-        </div>
-        
-        {/* Table Footer Meta-strip */}
-        <div className="border-t border-slate-800 bg-slate-950/80 px-6 py-3 text-[10px] tracking-[0.2em] text-slate-500 flex justify-between items-center">
-          <span className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
-            TOTAL EVENTS: {UImockData.length}
-          </span>
-          <span>PARSER CONFIDENCE: 99.8%</span>
         </div>
       </div>
     </div>

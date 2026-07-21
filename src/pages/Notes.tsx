@@ -8,20 +8,21 @@ interface ThreatItem {
 }
 
 const Notes = () => {
-  const [notes, setNotes] = useState<string>(
-    '# Investigation Notes - Case #03\n- Suspicious PowerShell script executed from AppData.\n- Checking outbound connections to known C2 servers.'
-  );
-  
+  // --- State for original IoC Tracker ---
   const [threats, setThreats] = useState<ThreatItem[]>([
     { id: '1', indicator: '192.168.1.145', type: 'IP Address', severity: 'WARNING' },
     { id: '2', indicator: 'e3b0c44298fc1c149afbf4c8996fb924', type: 'File Hash', severity: 'CRITICAL' },
   ]);
-
   const [newIndicator, setNewIndicator] = useState('');
   const [newType, setNewType] = useState<'IP Address' | 'File Hash' | 'Domain'>('File Hash');
   const [newSeverity, setNewSeverity] = useState<'CRITICAL' | 'WARNING' | 'INFO'>('CRITICAL');
 
-  const handleAddThreat = (e: React.FormEvent) => {
+  // --- State for new Analyst Notes (Hackathon Requirement) ---
+  const [analystNote, setAnalystNote] = useState('');
+  const [evidenceLink, setEvidenceLink] = useState('');
+  const [mitreTag, setMitreTag] = useState('');
+
+  const handleAddIoC = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newIndicator.trim()) return;
 
@@ -34,6 +35,15 @@ const Notes = () => {
 
     setThreats([newItem, ...threats]);
     setNewIndicator('');
+  };
+
+  const handleSaveNote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!analystNote.trim()) return;
+    
+    // In a full production app, this would push to the export state.
+    alert(`Analyst Note saved for ${evidenceLink || 'General'} with tag ${mitreTag || 'None'}`);
+    setAnalystNote('');
   };
 
   const getSeverityBadge = (sev: string) => {
@@ -55,7 +65,7 @@ const Notes = () => {
           Threat Intel & Analyst Scratchpad
         </h1>
         <p className="text-sm text-slate-400">
-          Isolate Indicators of Compromise (IoCs) and maintain tactical investigation logs.
+          Isolate Indicators of Compromise (IoCs) and maintain tactical investigation logs with MITRE ATT&CK tagging.
         </p>
       </div>
 
@@ -69,7 +79,7 @@ const Notes = () => {
             <h2 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
               // Log New Indicator of Compromise (IoC)
             </h2>
-            <form onSubmit={handleAddThreat} className="flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleAddIoC} className="flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
                 placeholder="Enter Hash, IP, or Domain..."
@@ -125,24 +135,57 @@ const Notes = () => {
               ))}
             </div>
           </div>
-
         </div>
 
-        {/* Right Col: Markdown-style Analyst Scratchpad */}
+        {/* Right Col: Analyst Notes + MITRE ATT&CK */}
         <div className="flex flex-col gap-4">
           <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5 flex flex-col flex-1 backdrop-blur-sm">
-            <h2 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3">
-              // Analyst Scratchpad
+            <h2 className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
+              // Analyst Notes & Threat Tagging
             </h2>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="flex-1 w-full bg-slate-950 border border-slate-800 rounded-lg p-4 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-400 resize-none min-h-[300px]"
-              placeholder="Type investigation findings here..."
-            />
-            <p className="text-[10px] text-slate-500 tracking-wider mt-2 text-right">
-              AUTO-SAVED TO BUFFER
-            </p>
+            
+            <form onSubmit={handleSaveNote} className="flex flex-col gap-3 flex-1">
+              <div className="flex flex-col gap-3">
+                {/* Evidence Link */}
+                <select
+                  value={evidenceLink}
+                  onChange={(e) => setEvidenceLink(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-cyan-400 font-mono"
+                >
+                  <option value="">Link Evidence...</option>
+                  <option value="invoice.lnk">invoice.lnk</option>
+                  <option value="NTUSER.DAT">NTUSER.DAT</option>
+                  <option value="Security.evtx">Security.evtx</option>
+                </select>
+
+                {/* MITRE ATT&CK Tag */}
+                <select
+                  value={mitreTag}
+                  onChange={(e) => setMitreTag(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-cyan-400 font-mono"
+                >
+                  <option value="">Select MITRE T-Code...</option>
+                  <option value="T1059">T1059 - Command & Scripting</option>
+                  <option value="T1204">T1204 - User Execution</option>
+                  <option value="T1105">T1105 - Ingress Tool Transfer</option>
+                  <option value="T1547">T1547 - Boot or Logon Autostart</option>
+                </select>
+              </div>
+
+              <textarea
+                value={analystNote}
+                onChange={(e) => setAnalystNote(e.target.value)}
+                placeholder="Analyst observation..."
+                className="flex-1 mt-2 w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm font-mono text-slate-300 focus:outline-none focus:border-cyan-400 resize-none min-h-[150px]"
+              />
+
+              <button
+                type="submit"
+                className="mt-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 px-5 py-2 rounded-lg text-sm font-semibold tracking-wide transition-colors w-full"
+              >
+                SAVE NOTE TO REPORT
+              </button>
+            </form>
           </div>
         </div>
 

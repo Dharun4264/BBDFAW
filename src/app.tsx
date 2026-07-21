@@ -6,6 +6,10 @@ import Timeline from './pages/Timeline';
 import Upload from './pages/Upload';
 import NotFound from './pages/NotFound';
 import Notes from './pages/Notes';
+
+// 1. IMPORT THE LOGIN PAGE HERE
+import Login from './pages/Login';
+
 const App = () => {
   const [aiEngineActive, setAiEngineActive] = useState<boolean>(false);
   const [systemStatus, setSystemStatus] = useState<string>('INITIALIZING...');
@@ -58,16 +62,24 @@ const App = () => {
 
         {/* Main content */}
         <div className="relative z-10 pt-14">
-          <Layout>
           <Routes>
-  <Route path="/dashboard" element={<Dashboard />} />
-  <Route path="/timeline" element={<Timeline />} />
-  <Route path="/upload" element={<Upload />} />
-  <Route path="/notes" element={<Notes />} /> {/* <-- ADD THIS LINE */}
-  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-  <Route path="*" element={<NotFound />} />
-</Routes>
-          </Layout>
+            {/* 2. THE STANDALONE LOGIN ROUTE */}
+            <Route path="/login" element={<Login />} />
+
+            {/* 3. THE AUTHENTICATED ROUTES WRAPPED IN THE LAYOUT */}
+            <Route path="/*" element={
+              <Layout>
+                <Routes>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/timeline" element={<Timeline />} />
+                  <Route path="/upload" element={<Upload />} />
+                  <Route path="/notes" element={<Notes />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Layout>
+            } />
+          </Routes>
         </div>
       </div>
     </BrowserRouter>
