@@ -5,7 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Timeline from './pages/Timeline';
 import Upload from './pages/Upload';
 import NotFound from './pages/NotFound';
-
+import Notes from './pages/Notes';
 const App = () => {
   const [aiEngineActive, setAiEngineActive] = useState<boolean>(false);
   const [systemStatus, setSystemStatus] = useState<string>('INITIALIZING...');
@@ -59,13 +59,14 @@ const App = () => {
         {/* Main content */}
         <div className="relative z-10 pt-14">
           <Layout>
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/timeline" element={<Timeline />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+          <Routes>
+  <Route path="/dashboard" element={<Dashboard />} />
+  <Route path="/timeline" element={<Timeline />} />
+  <Route path="/upload" element={<Upload />} />
+  <Route path="/notes" element={<Notes />} /> {/* <-- ADD THIS LINE */}
+  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+  <Route path="*" element={<NotFound />} />
+</Routes>
           </Layout>
         </div>
       </div>

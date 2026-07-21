@@ -1,4 +1,4 @@
-export const mockData = [
+export const UImockData = [
   {
     id: 1,
     time: "09:15 AM",

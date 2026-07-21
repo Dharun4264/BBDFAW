@@ -1,14 +1,16 @@
 import React, { useState, useEffect, type ReactNode } from "react";
+import { NavLink } from "react-router-dom"; // <-- 1. Import NavLink
 
 interface LayoutProps {
   children: ReactNode;
 }
 
+// 2. Change items to objects with actual paths mapped to App.tsx
 const navigationItems = [
-  "Case Overview",
-  "Evidence Vault",
-  "Timeline Analysis",
-  "Threat Intel",
+  { name: "Case Overview", path: "/dashboard" },
+  { name: "Evidence Vault", path: "/upload" },
+  { name: "Timeline Analysis", path: "/timeline" },
+  { name: "Threat Intel", path: "/notes" }, 
 ];
 
 export function Layout({ children }: LayoutProps) {
@@ -56,24 +58,31 @@ export function Layout({ children }: LayoutProps) {
           </div>
 
           <nav className="flex-1 space-y-2 p-3" aria-label="Primary navigation">
-            {navigationItems.map((item, index) => (
-              <a
-                key={item}
-                href="#"
-                title={isSidebarCollapsed ? item : undefined}
-                className={`group flex h-10 items-center rounded-md px-3 text-sm transition-all duration-200 ${
-                  index === 0
-                    ? "bg-cyan-400/10 text-cyan-300 border border-cyan-400/20"
-                    : "text-slate-400 hover:bg-slate-800 hover:text-cyan-300 border border-transparent"
-                }`}
+            {/* 3. Replace <a> tag with <NavLink> for true SPA routing */}
+            {navigationItems.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                title={isSidebarCollapsed ? item.name : undefined}
+                className={({ isActive }) =>
+                  `group flex h-10 items-center rounded-md px-3 text-sm transition-all duration-200 ${
+                    isActive
+                      ? "bg-cyan-400/10 text-cyan-300 border border-cyan-400/20"
+                      : "text-slate-400 hover:bg-slate-800 hover:text-cyan-300 border border-transparent"
+                  }`
+                }
               >
-                <span 
-                  className={`mr-3 h-2.5 w-2.5 shrink-0 rounded-full border border-current transition-transform duration-200 group-hover:scale-125 ${
-                    index === 0 ? "bg-cyan-400/50 shadow-[0_0_8px_rgba(34,211,238,0.6)]" : ""
-                  }`} 
-                />
-                {!isSidebarCollapsed && <span className="whitespace-nowrap">{item}</span>}
-              </a>
+                {({ isActive }) => (
+                  <>
+                    <span 
+                      className={`mr-3 h-2.5 w-2.5 shrink-0 rounded-full border border-current transition-transform duration-200 group-hover:scale-125 ${
+                        isActive ? "bg-cyan-400/50 shadow-[0_0_8px_rgba(34,211,238,0.6)]" : ""
+                      }`} 
+                    />
+                    {!isSidebarCollapsed && <span className="whitespace-nowrap">{item.name}</span>}
+                  </>
+                )}
+              </NavLink>
             ))}
           </nav>
 

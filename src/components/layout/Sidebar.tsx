@@ -1,4 +1,14 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
+
+// We map out the exact paths to match your App.tsx routes
+const navItems = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'File Upload', path: '/upload' },
+  { label: 'Forensic Timeline', path: '/timeline' },
+  { label: 'Analyst Notes', path: '/notes' }, 
+  { label: 'Export Report', path: '/report' }
+];
 
 const Sidebar = () => {
   return (
@@ -9,14 +19,20 @@ const Sidebar = () => {
       </div>
       
       <nav className="flex-1 p-4 space-y-2">
-        {['Dashboard', 'File Upload', 'Forensic Timeline', 'Analyst Notes', 'Export Report'].map((item) => (
-          <a 
-            key={item} 
-            href="#" 
-            className="block px-4 py-3 rounded-md hover:bg-slate-900 hover:text-cyan-400 transition-colors border border-transparent hover:border-slate-700"
+        {navItems.map((item) => (
+          <NavLink 
+            key={item.label} 
+            to={item.path} 
+            className={({ isActive }) => 
+              `block px-4 py-3 rounded-md transition-colors border ${
+                isActive 
+                  ? 'bg-slate-900 text-cyan-400 border-slate-700' // Highlight the active page
+                  : 'border-transparent hover:bg-slate-900 hover:text-cyan-400 hover:border-slate-700 text-slate-400'
+              }`
+            }
           >
-            &gt; {item}
-          </a>
+            &gt; {item.label}
+          </NavLink>
         ))}
       </nav>
 
