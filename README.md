@@ -1,51 +1,55 @@
-# 🛸 PWNDORA // Browser-Native DFIR Workbench
+# 🛡️ PWNDORA: Browser-Native Digital Forensics Workbench
+**Track:** T-04 DILE — DFIR Innovation Lab Extension  
+**Problem Statement ID:** BSCDS26-DILE-01  
 
-**Built by Team CyberNexus | Submission for Track T-04: DILE**
+## 🚀 Architecture Overview
+PWNDORA is a 100% client-side, air-gapped digital forensics triage tool. It solves the critical privacy issue of cloud-based log analyzers by parsing binary forensic artifacts (Registry Hives, LNKs, EVTX, and Prefetch) directly in the browser's memory. **Zero bytes of evidence are ever transmitted to a backend server.**
 
-PWNDORA is a next-generation, strictly client-side Digital Forensics and Incident Response (DFIR) workbench. Designed to eliminate the friction of cloud uploads and backend processing delays, PWNDORA leverages browser-native APIs to parse, analyze, and map forensic artifacts entirely within local memory. 
-
-This ensures absolute data privacy, rapid triaging, and a zero-trust compliance footprint.
-
----
-
-## 🚀 Core Features & Judging Alignment
-
-### 1. Zero-Server Parsing Engine (Product Fit)
-PWNDORA reads binary artifacts (`.lnk`, `.reg`, `.dat`, `.evtx`) using the native HTML5 `FileReader` API. By processing `ArrayBuffers` directly in the browser, the application completely bypasses the need for a backend server, aligning perfectly with the requirement for a lightweight, browser-native lab product.
-
-### 2. Live Artifact Extraction & Timeline (Working Prototype)
-- Automatically extracts target paths, volume serial numbers, and RunKey persistence mechanisms.
-- Generates a chronological, unified timeline of suspicious events.
-- Features a fictional scenario dashboard (#PWN-2026-03) for immediate analyst onboarding.
-
-### 3. Tactical Analyst Workflow 
-Analysts can isolate Indicators of Compromise (IoCs) and tag evidence with standard **MITRE ATT&CK T-codes** (e.g., T1059 for Command & Scripting) directly within the interface. Findings can be exported locally as `JSON` or `CSV` for reporting.
-
-### 4. 🌟 Innovation: Secure Session Purge
-Unlike standard web applications, forensic environments require strict data sanitization. We implemented a **"Secure Session Purge"** protocol. When an analyst initiates a logout, PWNDORA explicitly destroys all forensic telemetry and `sessionStorage` buffers before safely ejecting the user to a restricted terminal interface, preventing localized data leaks.
-
-### 5. Security by Design
-- **100% Client-Side:** No evidence is ever transmitted over the network.
-- **Volatile Storage:** Uses ephemeral browser memory; no persistent local storage of forensic buffers.
-- **Zero-Trust UI:** Destructive actions (Session Purge) are visually distinct and functionally absolute.
+### 🌟 Key Innovation: On-Device Heuristic Threat Scoring
+Drawing on edge-computing principles, this workbench doesn't just parse data—it evaluates it. We implemented a lightweight, browser-native mathematical scoring engine. As artifacts are ingested via HTML5 `ArrayBuffers`, strings are evaluated against weighted threat vectors, normalizing raw scores into a **Threat Confidence Level (0-99%)** and auto-tagging MITRE ATT&CK T-codes entirely on the client side.
 
 ---
 
-## 🛠️ Technical Architecture
-
-* **Frontend Framework:** React 18
-* **Language:** TypeScript (Strict typing for forensic data structures)
-* **Styling:** Tailwind CSS (Custom cyber-aesthetic theme)
-* **Routing:** React Router DOM v6
-* **Build Tool:** Vite (For ultra-fast Hot Module Replacement and optimized builds)
+## 🛠️ Tech Stack
+* **Frontend:** React, TypeScript, Vite, Tailwind CSS
+* **Core Parsing Engine:** Native HTML5 `FileReader` & `DataView` (Zero external dependencies)
+* **Data Persistence:** Browser `sessionStorage` (with secure logout purge capabilities)
+* **Algorithms:** Bounded exponential normalization for heuristic threat scoring
 
 ---
 
-## 💻 Local Development & Evaluation Setup
+## ⚙️ Setup Instructions (Single Command Launch)
 
-To evaluate the prototype locally, follow these steps:
+We have provided dual launch scripts to ensure cross-platform compatibility for the judging panel. 
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/Dharun4264/BBDFAW.git](https://github.com/Dharun4264/BBDFAW.git)
-   cd BBDFAW/BBDFAW
+**For Windows Systems:**
+1. Clone the repository.
+2. Double-click the `run.bat` file in the root directory.
+*(Alternatively, open CMD/PowerShell and run `.\run.bat`)*
+
+**For Linux / macOS Systems:**
+1. Clone the repository.
+2. Open terminal in the root directory and make the script executable: `chmod +x run.sh`
+3. Execute the script: `./run.sh`
+
+*Both scripts will automatically install dependencies via `npm install` and launch the local development server.*
+
+---
+
+## 🧪 Judge Test Instructions
+
+To evaluate the complete end-to-end prototype, please follow this triage workflow:
+
+1. **Ingest Evidence:** Navigate to the **Evidence Vault** (`/#/upload`).
+2. **Stress Test:** Drag and drop any synthetic `.lnk`, `.evtx`, `.pf`, or `.dat` file into the drop zone. Alternatively, click the **"Generate & Test 5MB Mock Artifact"** button to witness high-volume memory parsing without UI freezing.
+3. **Analyze Timeline:** You will be automatically redirected to the **Timeline Analysis** page. Observe the parsed binary strings, timestamp extraction, and the dynamic **Heuristic Threat Score** badges (Critical/High/Low) assigned to the data.
+4. **Export Documentation:** Navigate to the **Report** tab. Read the embedded *Operation Midnight* scenario briefing and click **Download CSV** or **Download JSON** to export the structured findings directly to your local disk.
+
+---
+
+## 🛑 Known Limitations
+* **Browser Memory Caps:** While the parser efficiently handles multi-megabyte files (tested up to 5MB smoothly), attempting to ingest monolithic files (e.g., a 2GB raw memory dump) will hit the browser's hard V8 memory limits and may cause tab crashes. 
+* **UTF-16 Decoding:** The current custom extraction loop prioritizes ASCII and basic null-terminated strings for speed. Heavily obfuscated wide-character (UTF-16LE) strings may require a more robust buffer decoding array in future iterations.
+
+---
+*Built for the BrewingSec CyberDev Summit 2026.*

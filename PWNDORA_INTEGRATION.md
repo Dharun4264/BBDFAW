@@ -1,18 +1,32 @@
-# Commercial Product Integration: PWNDORA Roadmap
-**Submission ID:** BSCDS26-DILE-01  
+# 💼 PWNDORA Commercial Integration Brief
+**Track:** T-04 DILE | **Problem Statement ID:** BSCDS26-DILE-01
 
-## 1. Product Fit & Commercial Viability
-PWNDORA bridges the operational gap between heavy, installed desktop triage suites (like FTK or RegRipper) and rapid web-based incident response. By integrating directly into the BlackPerl DFIR product ecosystem, this workbench provides tier-1 SOC analysts and field investigators with an instant, zero-install triage portal.
+## 1. Executive Summary & Commercial Value
+The current BlackPerl DFIR training platform relies heavily on challenge-based labs where users must exit the browser to use desktop tools (FTK, RegRipper). This disrupts the user experience and breaks the platform's "browser-native" promise. 
 
-## 2. Key Forensic Extractors
-* **Windows Event Logs (`.evtx`):** Automatically maps critical authentication events (e.g., Event IDs 4624 successful logins and 4625 failed brute-force attempts).
-* **Registry & LNK Artifacts:** Extracts target paths, MAC timestamps, and machine IDs to reconstruct user activity timelines during incident scoping.
-* **MITRE ATT&CK T-Code Tagging:** Automatically associates anomalies with recognized adversary tactics and techniques for immediate report generation.
+By integrating the **Browser-Based Digital Forensics Artifact Workbench (BBDFAW)**, BlackPerl can offer a seamless, end-to-end triage environment directly within the platform. The inclusion of the **Edge-Computed Heuristic AI Engine** provides a massive competitive advantage over other training platforms by introducing automated MITRE ATT&CK mapping—training analysts for the future of AI-assisted cybersecurity.
 
-## 3. Deployment & Verification
-To launch the workbench locally for evaluation:
-```bash
-git clone [https://github.com/Dharun4264/BBDFAW.git](https://github.com/Dharun4264/BBDFAW.git)
-cd BBDFAW/BBDFAW
-npm install
-npm run dev
+---
+
+## 2. UI Embedding Strategy
+The BBDFAW is built as an agnostic, standalone React environment. Integration into the main PWNDORA web application can be handled in two ways:
+
+* **Micro-Frontend (Component Injection):** The core `<ForensicWorkbench />` component can be imported directly into the PWNDORA React tree, inheriting global themes (Tailwind CSS) while maintaining isolated state for the forensic parser.
+* **Isolated Sandbox (iFrame):** For strict isolation, the workbench can be served on a subdomain (e.g., `workbench.pwndora.com`) and embedded into training lab modules via an `<iframe>`.
+
+---
+
+## 3. API Surface & Lab Synchronization
+Because the workbench processes artifacts 100% locally, it requires zero backend API endpoints for file ingestion. However, to synchronize with BlackPerl's gamified learning environment, we expose a secure client-side event bus:
+
+* **`window.postMessage` API:** When a student successfully parses an artifact and triggers a specific Heuristic Threat Score or extracts a flagged IOC (Indicator of Compromise), the workbench dispatches a message to the parent PWNDORA window.
+* **Example Payload:** 
+  ```json
+  {
+    "type": "PWNDORA_LAB_EVENT",
+    "action": "FLAG_CAPTURED",
+    "data": {
+      "ioc": "payload.exe",
+      "tactic": "T1204"
+    }
+  }

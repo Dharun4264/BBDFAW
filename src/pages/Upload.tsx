@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { parseArtifactLocally } from '../utils/forensicParser';
+import { parseArtifact } from '../utils/forensicParser';
 import { generateMockForensicLog } from '../utils/artifactGenerator';
 
 const Upload = () => {
@@ -18,7 +18,7 @@ const Upload = () => {
     setTimeout(async () => {
       setStatusText('Extracting forensic fields & generating timeline artifacts...');
       
-      const results = await parseArtifactLocally(file);
+      const results = await parseArtifact(file);
       
       const existing = JSON.parse(sessionStorage.getItem('pwndora_findings') || '[]');
       sessionStorage.setItem('pwndora_findings', JSON.stringify([...results, ...existing]));
