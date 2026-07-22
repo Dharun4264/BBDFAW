@@ -47,5 +47,5 @@ To evaluate the prototype locally, follow these steps:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/your-username/pwndora-dfir.git](https://github.com/your-username/pwndora-dfir.git)
-   cd pwndora-dfir
+   git clone [https://github.com/Dharun4264/BBDFAW.git](https://github.com/Dharun4264/BBDFAW.git)
+   cd BBDFAW/BBDFAW

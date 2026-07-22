@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { exportReportAsCSV, exportReportAsJSON } from '../UTILSS/exporter';
+import { exportReportAsCSV, exportReportAsJSON } from '../utils/exporter';
 const Timeline = () => {
   const [findings, setFindings] = useState<any[]>([]);
 

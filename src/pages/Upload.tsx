@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { parseArtifactLocally } from '../UTILSS/forensicParser';
+import { parseArtifactLocally } from '../utils/forensicParser';
+import { generateMockForensicLog } from '../utils/artifactGenerator';
+
 const Upload = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -13,13 +15,11 @@ const Upload = () => {
     setIsLoading(true);
     setStatusText(`Reading ${file.name} locally in browser memory...`);
 
-    // Parse standard artifacts completely client-side!
     setTimeout(async () => {
       setStatusText('Extracting forensic fields & generating timeline artifacts...');
       
       const results = await parseArtifactLocally(file);
       
-      // Save findings temporarily in browser session storage for the Timeline page
       const existing = JSON.parse(sessionStorage.getItem('pwndora_findings') || '[]');
       sessionStorage.setItem('pwndora_findings', JSON.stringify([...results, ...existing]));
 
@@ -38,6 +38,12 @@ const Upload = () => {
     e.preventDefault();
     setIsDragOver(false);
     if (e.dataTransfer.files?.[0]) processFile(e.dataTransfer.files[0]);
+  };
+
+  // Quick action for judges to test 5MB parsing instantly
+  const handleTestGeneration = () => {
+    const mockFile = generateMockForensicLog(5);
+    processFile(mockFile);
   };
 
   return (
@@ -77,6 +83,17 @@ const Upload = () => {
             <p className="text-sm font-medium text-emerald-300">{statusText}</p>
           </div>
         )}
+      </div>
+
+      {/* Quick Test Helper for Evaluators */}
+      <div className="mt-6">
+        <button
+          onClick={handleTestGeneration}
+          disabled={isLoading}
+          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 font-mono text-xs rounded-lg transition-all shadow-md flex items-center gap-2"
+        >
+          <span>⚡ Generate & Test 5MB Mock Artifact</span>
+        </button>
       </div>
     </section>
   );
