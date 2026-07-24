@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
-  base: './',
+  plugins: [react()],
+  server: {
+    host: true, // This is the magic line! It tells Docker to expose the app to the browser.
+    strictPort: true,
+    port: 5173,
+  }
 })
