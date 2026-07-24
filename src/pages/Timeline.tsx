@@ -1,76 +1,173 @@
-import React, { useState, useEffect } from 'react';
-
-interface ForensicFinding {
-  id: string;
-  timestamp: string;
-  artifactType: string;
-  extractedField: string;
-  value: string;
-  significance: string;
-  threatScore?: number;
-  mitreTactic?: string;
-}
+import React, { useState, useMemo } from 'react';
+import { useEvidence } from '../context/EvidenceContext';
+import { TimelineGraph } from '../components/graph/TimelineGraph';
+import { exporter } from '../utils/exporter';
 
 const Timeline = () => {
-  const [findings, setFindings] = useState<ForensicFinding[]>([]);
+  const { findings, loadSampleCase } = useEvidence();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterArtifact, setFilterArtifact] = useState('ALL');
+  const [sortAsc, setSortAsc] = useState(true);
 
-  useEffect(() => {
-    // Dynamically load the parsed findings from browser memory
-    const storedFindings = sessionStorage.getItem('pwndora_findings');
-    if (storedFindings) {
-      setFindings(JSON.parse(storedFindings));
-    }
-  }, []);
+  const artifactTypes = useMemo(() => {
+    const set = new Set(findings.map((f) => f.artifactType));
+    return ['ALL', ...Array.from(set)];
+  }, [findings]);
 
-  // Conditional CSS styling for the Heuristic Threat Engine
+  const filteredFindings = useMemo(() => {
+    return findings
+      .filter((f) => {
+        if (filterArtifact !== 'ALL' && f.artifactType !== filterArtifact) return false;
+        if (!searchTerm) return true;
+        const q = searchTerm.toLowerCase();
+        return (
+          f.value.toLowerCase().includes(q) ||
+          f.extractedField.toLowerCase().includes(q) ||
+          f.sourceFile.toLowerCase().includes(q) ||
+          f.mitreTactic.toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => {
+        const ta = a.rawDate ? a.rawDate.getTime() : 0;
+        const tb = b.rawDate ? b.rawDate.getTime() : 0;
+        return sortAsc ? ta - tb : tb - ta;
+      });
+  }, [findings, searchTerm, filterArtifact, sortAsc]);
+
+  const handleExportCSV = () => {
+    exporter.toCSV(filteredFindings);
+  };
+
+  const handleExportJSON = () => {
+    exporter.toJSON(filteredFindings);
+  };
+
   const getScoreBadge = (score?: number) => {
     if (score === undefined) return <span className="text-slate-500">N/A</span>;
-    if (score > 75) return <span className="bg-red-500/20 text-red-400 border border-red-500 px-2 py-1 rounded-md shadow-[0_0_10px_rgba(239,68,68,0.5)] shadow-red-500/50">{score}% CRITICAL</span>;
-    if (score > 40) return <span className="bg-orange-500/20 text-orange-400 border border-orange-500 px-2 py-1 rounded-md">{score}% HIGH</span>;
-    return <span className="bg-cyan-500/20 text-cyan-400 border border-cyan-500 px-2 py-1 rounded-md">{score}% LOW</span>;
+    if (score > 75) {
+      return (
+        <span className="rounded-md border border-red-500 bg-red-500/20 px-2 py-0.5 text-xs font-mono font-bold text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.4)]">
+          {score}% CRITICAL
+        </span>
+      );
+    }
+    if (score > 40) {
+      return (
+        <span className="rounded-md border border-amber-500 bg-amber-500/20 px-2 py-0.5 text-xs font-mono font-bold text-amber-400">
+          {score}% HIGH
+        </span>
+      );
+    }
+    return (
+      <span className="rounded-md border border-cyan-500 bg-cyan-500/20 px-2 py-0.5 text-xs font-mono font-bold text-cyan-400">
+        {score}% LOW
+      </span>
+    );
   };
 
   return (
-    <div className="p-6 text-slate-200 min-h-screen">
-      <div className="mb-6 flex justify-between items-center">
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-wide text-cyan-300 uppercase">Forensic Findings Viewer</h1>
-          <p className="text-sm text-slate-400 mt-1">Chronological reconstruction of extracted artifact fields with heuristic threat scoring.</p>
+          <h1 className="text-xl font-bold tracking-wide text-cyan-300 uppercase">
+            Forensic Findings &amp; Event Timeline
+          </h1>
+          <p className="mt-1 text-xs text-slate-400">
+            Chronological reconstruction of extracted artifact telemetry with heuristic threat scores.
+          </p>
         </div>
-        <div className="space-x-4">
-          <button className="px-4 py-2 bg-slate-900 border border-slate-700 text-xs text-cyan-400 hover:bg-slate-800 hover:border-cyan-500 rounded-md transition-all uppercase tracking-wider shadow-lg">Export CSV</button>
-          <button className="px-4 py-2 bg-slate-900 border border-slate-700 text-xs text-cyan-400 hover:bg-slate-800 hover:border-cyan-500 rounded-md transition-all uppercase tracking-wider shadow-lg">Export JSON</button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="rounded-md border border-slate-700 bg-slate-900 px-3.5 py-1.5 font-mono text-xs font-semibold text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-slate-800 uppercase"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={handleExportJSON}
+            className="rounded-md border border-slate-700 bg-slate-900 px-3.5 py-1.5 font-mono text-xs font-semibold text-cyan-400 transition-colors hover:border-cyan-500 hover:bg-slate-800 uppercase"
+          >
+            Export JSON
+          </button>
         </div>
       </div>
 
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-x-auto shadow-2xl backdrop-blur-md">
-        <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
+      {/* Timeline Histogram Component */}
+      <TimelineGraph findings={findings} />
+
+      {/* Filter & Search Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search findings (value, field, MITRE)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full max-w-xs rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+          />
+
+          <select
+            value={filterArtifact}
+            onChange={(e) => setFilterArtifact(e.target.value)}
+            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 focus:border-cyan-400 focus:outline-none"
+          >
+            {artifactTypes.map((type) => (
+              <option key={type} value={type}>
+                Filter: {type}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+          <span>SORT CHRONOLOGY:</span>
+          <button
+            onClick={() => setSortAsc(!sortAsc)}
+            className="rounded border border-slate-700 bg-slate-950 px-2.5 py-1 font-bold text-cyan-300 hover:border-cyan-400"
+          >
+            {sortAsc ? 'ASCENDING ▲' : 'DESCENDING ▼'}
+          </button>
+        </div>
+      </div>
+
+      {/* Findings Data Table */}
+      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/80 shadow-2xl backdrop-blur-md">
+        <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-slate-950/80 border-b border-slate-800 text-cyan-500 text-[11px] uppercase tracking-widest">
-              <th className="p-4 font-semibold">Timestamp</th>
-              <th className="p-4 font-semibold">Artifact Type</th>
-              <th className="p-4 font-semibold">Extracted Field</th>
-              <th className="p-4 font-semibold">Value</th>
-              <th className="p-4 font-semibold">MITRE Tactic</th>
-              <th className="p-4 font-semibold">Threat Score</th>
+            <tr className="border-b border-slate-800 bg-slate-950/90 font-mono text-[11px] uppercase tracking-widest text-cyan-400">
+              <th className="p-3.5 font-semibold">Timestamp</th>
+              <th className="p-3.5 font-semibold">Artifact Type</th>
+              <th className="p-3.5 font-semibold">Extracted Field</th>
+              <th className="p-3.5 font-semibold">Value</th>
+              <th className="p-3.5 font-semibold">MITRE Tactic</th>
+              <th className="p-3.5 font-semibold">Threat Score</th>
             </tr>
           </thead>
           <tbody>
-            {findings.length === 0 ? (
+            {filteredFindings.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-12 text-center text-slate-500 text-sm">
-                  No artifacts ingested yet. Use the Evidence Vault to upload files.
+                <td colSpan={6} className="p-12 text-center text-slate-500 text-xs">
+                  No artifacts match the specified filter or query.{' '}
+                  <button onClick={loadSampleCase} className="text-cyan-400 underline font-semibold">
+                    Load sample investigation
+                  </button>
                 </td>
               </tr>
             ) : (
-              findings.map((finding) => (
-                <tr key={finding.id} className="border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors">
-                  <td className="p-4 font-mono text-xs text-slate-400">{new Date(finding.timestamp).toLocaleString()}</td>
-                  <td className="p-4 text-slate-300 text-xs uppercase tracking-wide">{finding.artifactType}</td>
-                  <td className="p-4 text-emerald-400 text-xs">{finding.extractedField}</td>
-                  <td className="p-4 font-mono text-xs text-slate-300 max-w-xs truncate" title={finding.value}>{finding.value}</td>
-                  <td className="p-4 text-purple-400 text-xs font-mono">{finding.mitreTactic || 'None'}</td>
-                  <td className="p-4 text-xs font-bold font-mono tracking-wide">{getScoreBadge(finding.threatScore)}</td>
+              filteredFindings.map((finding) => (
+                <tr
+                  key={finding.id}
+                  className="border-b border-slate-800/50 transition-colors hover:bg-slate-800/50"
+                >
+                  <td className="p-3.5 font-mono text-slate-400 whitespace-nowrap">{finding.timestamp}</td>
+                  <td className="p-3.5 font-semibold text-cyan-300 whitespace-nowrap">{finding.artifactType}</td>
+                  <td className="p-3.5 font-semibold text-emerald-400 whitespace-nowrap">{finding.extractedField}</td>
+                  <td className="p-3.5 font-mono text-slate-200 break-all max-w-sm" title={finding.value}>
+                    {finding.value}
+                  </td>
+                  <td className="p-3.5 font-mono text-purple-400 whitespace-nowrap">{finding.mitreTactic}</td>
+                  <td className="p-3.5 whitespace-nowrap">{getScoreBadge(finding.threatScore)}</td>
                 </tr>
               ))
             )}
